@@ -1,36 +1,27 @@
-import logo from './logo.svg';
-import './App.css';
-import { useState } from "react";
+import "./App.css";
+import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 
 function App() {
-  const [value, updateValue] = useState("create new data");
   const [input, setInput] = useState("");
+  const [todoList, setToDoList] = useState();
   const baseUrl = "http://localhost:5001";
-  const getDataUrl = `${baseUrl}/get`;
-  const createDataUrl = `${baseUrl}/create`;
-  const getredisData = `${baseUrl}/getredisdata`;
-  const [redisData, updateRedisData] = useState({});
+  const getTodoUrl = `${baseUrl}/get`;
+  const createTodoUrl = `${baseUrl}/create`;
+  const deleteTodoUrl = `${baseUrl}/delete`;
 
-
-  const getData = async () => {
+  const getData = useCallback(async () => {
     try {
-      const { data } = await axios.get(getDataUrl);
-      updateValue(data);
-      console.log({ message: "got data", data });
-      let redisdata  = await axios.get(getredisData);
-      updateRedisData(redisdata.data);
-      console.log(redisdata);
-      console.log(redisData);
+      const { data } = await axios.get(getTodoUrl);
       return data;
     } catch (error) {
-      console.error({ message: "failed fetching data.", error });
+      console.error({ message: "failed fetching Todo.", error });
     }
-  };
+  }, [getTodoUrl]);
 
   const createData = async (inputText) => {
     try {
-      const { data } = await axios.post(createDataUrl, { data: inputText });
+      const { data } = await axios.post(createTodoUrl, { data: inputText });
       console.log({ message: "posted data", data });
       return data;
     } catch (error) {
@@ -38,39 +29,72 @@ function App() {
     }
   };
 
+  const deleteTodo = async (id) => {
+    try {
+      const { data } = await axios.delete(deleteTodoUrl, { data: { id } });
+      console.log({ message: "deleted data", data });
+      return data;
+    } catch (error) {
+      console.error({ message: "failed deleting data.", error });
+    }
+  };
+
   const handleSubmit = async (evt) => {
     evt.preventDefault();
     await createData(input);
+    const list = await getData();
+    setToDoList(list.data);
     setInput("");
   };
 
+  useEffect(() => {
+    if (!todoList) {
+      getData().then((res) => {
+        setToDoList(res.data);
+      });
+    }
+  }, [getData, todoList]);
+
+  console.log(todoList);
+
   return (
-    <main style={{ display: "grid", placeItems: "center", height: "100vh" }}>
-      <section style={{ zoom: "1.2", display: "grid", placeItems: "center" }}>
-        <form onSubmit={handleSubmit}>
+    <main>
+      <section className="p-5 flex justify-center items-center flex-col">
+        <h4 className="text-center text-2xl font-bold">Todo List</h4>
+        <form
+          className="border-blue-400 border rounded p-4 mt-4 w-[80vw] max-w-[400px]"
+          onSubmit={handleSubmit}
+        >
+          {/* Add todo list create form with buitiful design with tailwind css */}
           <input
             type="text"
             value={input}
-            onChange={(evt) => setInput(evt.target.value)}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Title"
+            className="border rounded h-10 w-full p-3 border-blue-950"
           />
-          <input type="submit" value="create data" />
+          <button
+            type="submit"
+            className="bg-blue-950 text-white rounded h-10 w-full mt-4"
+          >
+            Create
+          </button>
         </form>
-        <button onClick={getData} style={{ margin: "1rem 0" }}>
-          get data
-        </button>
-        <p style={{ textAlign: "justify" }}>
-          Try creating a data using input. Then click on "get data" twice to see
-          the magic. Keep an eye on the isCached property when you input new
-          data.
-        </p>
       </section>
-      <section style={{ height: "50vh" }}>
-        <h3 style={{ textAlign: "center" }}>output</h3>
-        <pre>{JSON.stringify(value, null, 2)}</pre>
-      </section>
-      <section style={{ height: "50vh" }}>
-        <h3 style={{ textAlign: "center" }}>output</h3>
-        <pre>{JSON.stringify(redisData)}</pre>
+      <section className="mx-auto border-blue-400 border rounded p-4 mt-4 w-[80vw] max-w-[400px]">
+        {todoList?.map((item) => (
+          <div className="flex p-3 justify-between items-center border-b-2 border-blue-950 py-2">
+            <p className="text-lg font-bold">{item.data}</p>
+            <button
+              onClick={() => {
+                deleteTodo(item.id);
+              }}
+              className="bg-red-500 text-white rounded h-8 w-8"
+            >
+              X
+            </button>
+          </div>
+        ))}
       </section>
     </main>
   );
