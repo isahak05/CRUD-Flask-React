@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "prepare": "cd frontend && npm install && cd ../server && npm install",
     "start_frontend": "cd frontend && npm start",
     "start_server": "cd server && npm run dev",
     "start": "concurrently --kill-others-on-fail \"npm run start_frontend\" \"npm run start_server\""
