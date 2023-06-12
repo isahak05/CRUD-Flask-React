@@ -75,7 +75,7 @@ const setRedisData = async (jsonData) => {
 
 const getRedisData = async () => {
   try {
-    const cachedData = await redisClient.get("key");
+    return await redisClient.get("key");
   } catch (err) {
     console.log(err);
   }
@@ -101,6 +101,7 @@ app.get("/get", async (_, res) => {
       return;
     } else {
       const [data, _] = await getMysqlData();
+      setRedisData(data);
       res.status(200).json({ data: data });
       return;
     }
