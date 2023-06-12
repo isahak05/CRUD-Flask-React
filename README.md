@@ -25,7 +25,7 @@ start will run both servers and also docker containers for MySQL and Redis.
 
 ## Workflow diagram
 
-![Workflow]('flow.png')
+![Workflow](./flow.png)
 
 ## Api working
 
