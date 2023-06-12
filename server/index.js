@@ -16,9 +16,10 @@ const redisUrl = "redis://localhost:6379";
 // mysql
 const myTable = "exam_db";
 
+console.log("hi");
+
 // configs
 
-console.log("hi");
 const dbConfig = {
   host: "localhost",
   user: "root",
@@ -29,11 +30,11 @@ const dbConfig = {
 
 // const sqlConnection = await mysql.createConnection(dbConfig);
 const redisClient = createClient({ url: redisUrl });
+const sqlConnection = await mysql.createConnection(dbConfig);
 
 // init database with data_init.sql file
 const initDatabase = async () => {
   try {
-    const sqlConnection = await mysql.createConnection(dbConfig);
     const sqlQuery = `CREATE TABLE IF NOT EXISTS ${myTable} (id VARCHAR(255), data VARCHAR(255))`;
     return sqlConnection.execute(sqlQuery);
   } catch (err) {
@@ -45,7 +46,6 @@ initDatabase();
 
 const getMysqlData = async () => {
   const sqlQuery = `SELECT data, id FROM ${myTable}`;
-  const sqlConnection = await mysql.createConnection(dbConfig);
   return sqlConnection.execute(sqlQuery);
 };
 
@@ -55,35 +55,30 @@ const createTodo = async (data) => {
 
   const sqlQuery = `INSERT INTO ${myTable} (id,data) VALUES('${guid}','${data}')`;
 
-  const sqlConnection = await mysql.createConnection(dbConfig);
   return sqlConnection.execute(sqlQuery);
 };
 
 const deleteTodo = async (id) => {
   const sqlQuery = `DELETE FROM ${myTable} WHERE id = '${id}'`;
-  const sqlConnection = await mysql.createConnection(dbConfig);
   return sqlConnection.execute(sqlQuery);
 };
 
+await redisClient.connect();
 const setRedisData = async (jsonData) => {
   const value = JSON.stringify({ data: jsonData });
-  await redisClient.connect();
-  console.log("lol", jsonData);
   await redisClient.set("key", value);
-  return redisClient.disconnect();
 };
 
 const getRedisData = async () => {
-  await redisClient.connect();
-  const cachedData = await redisClient.get("key");
-  await redisClient.disconnect();
-  return cachedData;
+  try {
+    const cachedData = await redisClient.get("key");
+  } catch (err) {
+    console.log(err);
+  }
 };
 
 const deleteRedisData = async () => {
-  await redisClient.connect();
   await redisClient.del("key");
-  return redisClient.disconnect();
 };
 
 //express
@@ -97,7 +92,6 @@ app.get("/", (_, res) => res.status(200).send("connected to server 1!"));
 app.get("/get", async (_, res) => {
   try {
     const data = await getRedisData();
-    console.log("hi boy", data);
     if (data) {
       res.status(200).json(JSON.parse(data));
       return;
@@ -143,6 +137,6 @@ app.delete("/delete", async (req, res) => {
   }
 });
 
-app.listen(expressPort, () => {
+app.listen(expressPort, async () => {
   console.log(`served on port ${expressPort}`);
 });

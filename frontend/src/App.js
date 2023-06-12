@@ -52,8 +52,8 @@ function App() {
   useEffect(() => {
     if (!todoList) {
       getData().then((res) => {
-        console.log(res, "hi", JSON.parse(res.data));
-        setToDoList(JSON.parse(res.data));
+        console.log(res, "hi");
+        setToDoList(res.data);
       });
     }
   }, [getData, todoList]);
@@ -85,8 +85,14 @@ function App() {
         </form>
       </section>
       <section className="mx-auto border-blue-400 border rounded p-4 mt-4 w-[80vw] max-w-[400px]">
+        {todoList?.length === 0 && (
+          <p className="text-center text-lg font-bold">No Todo :)</p>
+        )}
         {todoList?.map((item) => (
-          <div className="flex p-3 justify-between items-center border-b-2 border-blue-950 py-2">
+          <div
+            key={item.id}
+            className="flex p-3 justify-between items-center border-b-2 border-blue-950 py-2"
+          >
             <p className="text-lg font-bold">{item.data}</p>
             <button
               onClick={() => {
