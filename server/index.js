@@ -18,6 +18,7 @@ const myTable = "exam_db";
 
 // configs
 
+console.log("hi");
 const dbConfig = {
   host: "localhost",
   user: "root",
@@ -43,7 +44,7 @@ const initDatabase = async () => {
 initDatabase();
 
 const getMysqlData = async () => {
-  const sqlQuery = `SELECT data FROM ${myTable}`;
+  const sqlQuery = `SELECT data, id FROM ${myTable}`;
   const sqlConnection = await mysql.createConnection(dbConfig);
   return sqlConnection.execute(sqlQuery);
 };
@@ -67,6 +68,7 @@ const deleteTodo = async (id) => {
 const setRedisData = async (jsonData) => {
   const value = JSON.stringify({ data: jsonData });
   await redisClient.connect();
+  console.log("lol", jsonData);
   await redisClient.set("key", value);
   return redisClient.disconnect();
 };
@@ -94,14 +96,16 @@ app.use(express.urlencoded({ extended: false }));
 app.get("/", (_, res) => res.status(200).send("connected to server 1!"));
 app.get("/get", async (_, res) => {
   try {
-    const [data, _] = await getRedisData();
-    if (!data) {
-      // get from mysql
+    const data = await getRedisData();
+    console.log("hi boy", data);
+    if (data) {
+      res.status(200).json(JSON.parse(data));
+      return;
+    } else {
       const [data, _] = await getMysqlData();
-      res.status(200).json({ data });
+      res.status(200).json({ data: data });
       return;
     }
-    res.status(200).json({ data });
   } catch (error) {
     console.log({ error });
     res.status(500).json({ message: "failure", error });
@@ -110,12 +114,12 @@ app.get("/get", async (_, res) => {
 
 app.post("/create", async (req, res) => {
   const { data } = req.body;
-  console.log("data from request ", data);
   try {
     if (!data) throw new Error("missing data");
     await createTodo(data);
-    await setRedisData(data);
-    console.log("data from redis ", await getRedisData());
+    const [mysqlData] = await getMysqlData();
+    await deleteRedisData();
+    await setRedisData(mysqlData);
     res.status(200).json({ message: "success" });
   } catch (error) {
     console.log({ error });
@@ -123,11 +127,15 @@ app.post("/create", async (req, res) => {
   }
 });
 
-app.delete("/delete", async (_, res) => {
-  const { data } = req.body;
+app.delete("/delete", async (req, res) => {
+  const { id } = req.body;
   try {
-    if (!data) throw new Error("missing data");
-    await deleteTodo(data.id);
+    if (!id) throw new Error("missing data");
+    console.log(id);
+    await deleteTodo(id);
+    const [mysqlData] = await getMysqlData();
+    await deleteRedisData();
+    await setRedisData(mysqlData);
     res.status(200).json({ message: "success" });
   } catch (error) {
     console.log({ error });

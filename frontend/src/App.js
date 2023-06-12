@@ -33,6 +33,8 @@ function App() {
     try {
       const { data } = await axios.delete(deleteTodoUrl, { data: { id } });
       console.log({ message: "deleted data", data });
+      const list = await getData();
+      setToDoList(list.data);
       return data;
     } catch (error) {
       console.error({ message: "failed deleting data.", error });
@@ -50,7 +52,8 @@ function App() {
   useEffect(() => {
     if (!todoList) {
       getData().then((res) => {
-        setToDoList(res.data);
+        console.log(res, "hi", JSON.parse(res.data));
+        setToDoList(JSON.parse(res.data));
       });
     }
   }, [getData, todoList]);
