@@ -29,11 +29,14 @@ const dbConfig = {
 };
 
 // const sqlConnection = await mysql.createConnection(dbConfig);
-const redisClient = createClient({ url: redisUrl });
-const sqlConnection = await mysql.createConnection(dbConfig);
+let redisClient;
+let sqlConnection;
 
 // init database with data_init.sql file
-const initDatabase = async () => {
+const init = async () => {
+  redisClient = await createClient({ url: redisUrl });
+  redisClient.connect();
+  sqlConnection = await mysql.createConnection(dbConfig);
   try {
     const sqlQuery = `CREATE TABLE IF NOT EXISTS ${myTable} (id VARCHAR(255), data VARCHAR(255))`;
     return sqlConnection.execute(sqlQuery);
@@ -42,7 +45,9 @@ const initDatabase = async () => {
   }
 };
 
-initDatabase();
+setTimeout(() => {
+  init();
+}, 1);
 
 const getMysqlData = async () => {
   const sqlQuery = `SELECT data, id FROM ${myTable}`;
@@ -63,7 +68,6 @@ const deleteTodo = async (id) => {
   return sqlConnection.execute(sqlQuery);
 };
 
-await redisClient.connect();
 const setRedisData = async (jsonData) => {
   const value = JSON.stringify({ data: jsonData });
   await redisClient.set("key", value);

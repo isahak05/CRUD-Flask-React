@@ -5,8 +5,8 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "start_redis": "(docker stop redis-container && docker rm redis-container) || true  && docker run -d -p 6379:6379 --name redis-container redis",
-    "start_db": "(docker stop mysql-container && docker rm mysql-container) || true && docker run --name mysql-container -p 3307:3306 -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=todo_db -d mysql",
+    "start_redis": "((docker stop redis-container && docker rm redis-container) || true)  && docker run -d -p 6379:6379 --name redis-container redis",
+    "start_db": "((docker stop mysql-container && docker rm mysql-container) || true) && docker run --name mysql-container -p 3307:3306 -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=todo_db -d mysql",
     "dev": "yarn start_redis && yarn start_db && nodemon index.js"
   },
   "dependencies": {
