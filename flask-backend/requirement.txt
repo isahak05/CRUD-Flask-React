@@ -1,0 +1,5 @@
+flask
+redis
+Flask-SQLAlchemy
+flask-marshmallow
+Flask-Cors
