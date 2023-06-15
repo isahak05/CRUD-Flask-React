@@ -13,16 +13,16 @@ This is a simple to-do list app that allows you to add, and delete tasks. Techno
 
 ### prerequisites
 
-To run frontend
+To run frontend:
 
-npm start
+$npm start
 
-To run backend
+To run backend:
 
-flask run --host=0.0.0.0
+#flask run --host=0.0.0.0
 
 ```
-prepare will install all dependencies for both front-end and back-end and
+Prepare will install all dependencies for both front-end and back-end and
 start will run both servers and also docker containers for MySQL and Redis.
 
 ## Workflow diagram
