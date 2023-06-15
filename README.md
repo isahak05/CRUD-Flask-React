@@ -5,20 +5,22 @@
 This is a simple to-do list app that allows you to add, and delete tasks. Technologies
 
 - React
-- Express
+- Flask
 - Mysql
-- redis
+
 
 ## How to run
 
 ### prerequisites
 
-- Docker
+To run frontend
+
+npm start
 
 ```
-npm run prepare
-npm run start
-```
+To run backend
+
+flask run --host=0.0.0.0
 
 prepare will install all dependencies for both front-end and back-end and
 start will run both servers and also docker containers for MySQL and Redis.
